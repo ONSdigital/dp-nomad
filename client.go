@@ -1,4 +1,4 @@
-package nomadclient
+package client
 
 import (
 	"crypto/tls"
@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// Nomad represents the nomad client
 type Nomad struct {
 	Client dphttp.Clienter
 	URL string
@@ -18,14 +19,17 @@ type Nomad struct {
 }
 
 const prefix = "https://"
+
 var caCertPool *x509.CertPool
 
+// NewClient returns a Nomad HTTP client for this endpoint
+// with optional TLS config
 func NewClient(nomadEndpoint, nomadCACert string, nomadTLSSkipVerify bool) (*Nomad, error){
 
 	dpHTTPClient := *dphttp.DefaultClient
 
 	if strings.HasPrefix(nomadEndpoint, prefix) {
-		tlsConfig, err := createTlsConfig(nomadCACert, nomadTLSSkipVerify)
+		tlsConfig, err := createTLSConfig(nomadCACert, nomadTLSSkipVerify)
 		if err != nil {
 			return nil, err
 		}
@@ -39,37 +43,42 @@ func NewClient(nomadEndpoint, nomadCACert string, nomadTLSSkipVerify bool) (*Nom
 	}, nil
 }
 
-func createTlsConfig (nomadCACert string, nomadLSSkipVerify bool) (*tls.Config, error) {
+func createTLSConfig (nomadCACert string, nomadTLSSkipVerify bool) (*tls.Config, error) {
 
-	if nomadCACert == "" && !nomadLSSkipVerify {
-		return nil, errors.New("invalid configuration with https but no CA cert or skip verification enabled")
-	}
-	if nomadCACert != "" {
-		if caCertPool == nil {
-			var err error
-			caCertPool, err = x509.SystemCertPool()
-			if err != nil {
-				return nil, err
-			}
-			if caCertPool == nil {
-				caCertPool = x509.NewCertPool()
-			}
+	if nomadCACert == "" {
+		if !nomadTLSSkipVerify {
+			return nil, errors.New("invalid configuration with https but no CA cert or skip verification enabled")
 		}
+		// no CA file => do not check cert  XXX DANGER DANGER XXX
+		return &tls.Config{
+			InsecureSkipVerify: true,
+		}, nil
+	}
 
-		caCert, err := ioutil.ReadFile(nomadCACert)
+	// assert: nomadCACert is not empty
+
+	// Set caCertPool if first use
+	if caCertPool == nil {
+		var err error
+		caCertPool, err = x509.SystemCertPool()
 		if err != nil {
 			return nil, err
 		}
-		if !caCertPool.AppendCertsFromPEM(caCert) {
-			return nil, errors.New("failed to append ca cert to pool")
+		if caCertPool == nil {
+			caCertPool = x509.NewCertPool()
 		}
-
-		return &tls.Config{
-			RootCAs: caCertPool,
-		}, nil
 	}
-	// no CA file => do not check cert  XXX DANGER DANGER XXX
+
+	caCert, err := ioutil.ReadFile(nomadCACert)
+	if err != nil {
+		return nil, err
+	}
+	if !caCertPool.AppendCertsFromPEM(caCert) {
+		return nil, errors.New("failed to append ca cert to pool")
+	}
+
 	return &tls.Config{
-		InsecureSkipVerify: true,
+		RootCAs: caCertPool,
 	}, nil
+
 }

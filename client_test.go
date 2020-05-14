@@ -1,4 +1,4 @@
-package nomadclient
+package client
 
 import (
 	"testing"
@@ -46,7 +46,7 @@ func TestNewClientHTTP(t *testing.T) {
 
 func TestCreateTLSConfigCert(t *testing.T) {
 	Convey("Given valid input values", t, func(){
-		c, err := createTlsConfig("", true)
+		c, err := createTLSConfig("", true)
 		Convey("When a new config is created", func(){
 			Convey("Then config is returned with no errors", func(){
 				So(err, ShouldBeNil)
@@ -58,7 +58,7 @@ func TestCreateTLSConfigCert(t *testing.T) {
 
 func TestCreateTLSConfigCertFails(t *testing.T) {
 	Convey("Given invalid input values", t, func(){
-		c, err := createTlsConfig("/does/not/exist", false)
+		c, err := createTLSConfig("/does/not/exist", false)
 		Convey("When a new config is created", func(){
 			Convey("Then no config is returned with errors", func(){
 				So(err, ShouldNotBeNil)
@@ -71,7 +71,7 @@ func TestCreateTLSConfigCertFails(t *testing.T) {
 
 func TestCreateTLSConfigBadCertFails(t *testing.T) {
 	Convey("Given invalid input values", t, func(){
-		c, err := createTlsConfig("testdata/testBadCertFile", false)
+		c, err := createTLSConfig("testdata/testBadCertFile", false)
 		Convey("When a new config is created", func(){
 			Convey("Then no config is returned with errors", func(){
 				So(err, ShouldNotBeNil)
