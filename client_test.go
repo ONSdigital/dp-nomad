@@ -20,7 +20,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestNewClientFails(t *testing.T) {
-	Convey("Given invalid input values", t, func(){
+	Convey("Given no nomadCACert is rovided and nomadTLSSkipVerify is false", t, func(){
 		c, err := NewClient("https://localhost:4646", "", false)
 		Convey("When a new Client is created", func(){
 			Convey("Then no client is returned with errors", func(){
@@ -45,7 +45,7 @@ func TestNewClientHTTP(t *testing.T) {
 }
 
 func TestCreateTLSConfigCert(t *testing.T) {
-	Convey("Given valid input values", t, func(){
+	Convey("Given nomadCACert is empty and nomadTLSSkipVerify is true", t, func(){
 		c, err := createTLSConfig("", true)
 		Convey("When a new config is created", func(){
 			Convey("Then config is returned with no errors", func(){
