@@ -19,7 +19,7 @@ var (
 	}
 )
 
-func (c *Client) Checker (ctx context.Context, state *health.CheckState) error {
+func (c *Client) Checker(ctx context.Context, state *health.CheckState) error {
 	service := ServiceName
 	logData := log.Data{
 		"service": service,
@@ -28,6 +28,7 @@ func (c *Client) Checker (ctx context.Context, state *health.CheckState) error {
 	code, err := c.Get(ctx, "/v1/agent/health?type=client")
 	if err != nil {
 		log.Event(ctx, "failed to request service health", log.ERROR, log.Error(err), logData)
+		return err
 	}
 
 	switch code {
@@ -36,9 +37,6 @@ func (c *Client) Checker (ctx context.Context, state *health.CheckState) error {
 	case 200:
 		message := generateMessage(service, health.StatusOK)
 		state.Update(health.StatusOK, message, code)
-	case 429:
-		message := generateMessage(service, health.StatusWarning)
-		state.Update(health.StatusWarning, message, code)
 	default:
 		message := generateMessage(service, health.StatusCritical)
 		state.Update(health.StatusCritical, message, code)

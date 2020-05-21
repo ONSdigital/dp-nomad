@@ -6,6 +6,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+const nomadURL = "https://localhost:4646"
 
 func TestNewClient(t *testing.T) {
 	Convey("Given acceptable input values", t, func(){
@@ -14,13 +15,14 @@ func TestNewClient(t *testing.T) {
 			Convey("Then a client is returned with no errors", func(){
 				So(c, ShouldNotBeNil)
 				So(err, ShouldBeNil)
+				So(c.URL, ShouldEqual, "https://localhost:4646")
 			})
 		})
 	})
 }
 
 func TestNewClientFails(t *testing.T) {
-	Convey("Given no nomadCACert is rovided and nomadTLSSkipVerify is false", t, func(){
+	Convey("Given no nomadCACert is provided and nomadTLSSkipVerify is false", t, func(){
 		c, err := NewClient("https://localhost:4646", "", false)
 		Convey("When a new Client is created", func(){
 			Convey("Then no client is returned with errors", func(){
