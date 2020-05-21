@@ -2,9 +2,9 @@ package client
 
 import (
 	"context"
-
 	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
 	"github.com/ONSdigital/log.go/log"
+	"net/http"
 )
 
 // ServiceName
@@ -31,15 +31,12 @@ func (c *Client) Checker(ctx context.Context, state *health.CheckState) error {
 		return err
 	}
 
-	switch code {
-	case 0: // When there is a problem with the client return error in message
-		state.Update(health.StatusCritical, err.Error(), 0)
-	case 200:
-		message := generateMessage(service, health.StatusOK)
-		state.Update(health.StatusOK, message, code)
-	default:
+	if code != http.StatusOK {
 		message := generateMessage(service, health.StatusCritical)
 		state.Update(health.StatusCritical, message, code)
+	} else {
+		message := generateMessage(service, health.StatusOK)
+		state.Update(health.StatusOK, message, code)
 	}
 
 	return nil
