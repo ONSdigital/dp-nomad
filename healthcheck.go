@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"errors"
 	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
 	"github.com/ONSdigital/log.go/log"
 	"net/http"
@@ -28,16 +29,19 @@ func (c *Client) Checker(ctx context.Context, state *health.CheckState) error {
 	code, err := c.Get(ctx, "/v1/agent/health?type=client")
 	if err != nil {
 		log.Event(ctx, "failed to request service health", log.ERROR, log.Error(err), logData)
+		message := generateMessage(service, health.StatusCritical)
+		state.Update(health.StatusCritical, message, code)
 		return err
 	}
 
 	if code != http.StatusOK {
 		message := generateMessage(service, health.StatusCritical)
 		state.Update(health.StatusCritical, message, code)
-	} else {
-		message := generateMessage(service, health.StatusOK)
-		state.Update(health.StatusOK, message, code)
+		return errors.New("unexpected return code")
 	}
+
+	message := generateMessage(service, health.StatusOK)
+	state.Update(health.StatusOK, message, code)
 
 	return nil
 }
