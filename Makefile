@@ -11,3 +11,7 @@ audit:
 build:
 	go build ./...
 .PHONY: build
+
+lint:
+	go fmt ./...
+.PHONY: lint

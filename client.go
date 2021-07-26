@@ -6,7 +6,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -124,6 +124,6 @@ func closeResponseBody(ctx context.Context, resp *http.Response) {
 	}
 
 	if err := resp.Body.Close(); err != nil {
-		log.Event(ctx, "error closing http response body", log.ERROR, log.Error(err))
+		log.Error(ctx, "error closing http response body", err)
 	}
 }

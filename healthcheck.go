@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 	"net/http"
 )
 
@@ -28,7 +28,7 @@ func (c *Client) Checker(ctx context.Context, state *health.CheckState) error {
 
 	code, err := c.Get(ctx, "/v1/agent/health?type=client")
 	if err != nil {
-		log.Event(ctx, "failed to request service health", log.ERROR, log.Error(err), logData)
+		log.Error(ctx, "failed to request service health", err, logData)
 		message := generateMessage(service, health.StatusCritical)
 		state.Update(health.StatusCritical, message, code)
 		return err
