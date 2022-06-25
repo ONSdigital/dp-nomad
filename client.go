@@ -6,12 +6,12 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"github.com/ONSdigital/log.go/v2/log"
 	"io/ioutil"
 	"net/http"
 	"strings"
 
-	dphttp "github.com/ONSdigital/dp-net/http"
+	dphttp "github.com/ONSdigital/dp-net/v2/http"
+	"github.com/ONSdigital/log.go/v2/log"
 )
 
 // Nomad represents the nomad client
@@ -45,7 +45,7 @@ func (e ErrInvalidAppResponse) Error() string {
 // with optional TLS config
 func NewClient(nomadEndpoint, nomadCACert string, nomadTLSSkipVerify bool) (*Client, error) {
 
-	dpHTTPClient := *dphttp.DefaultClient
+	var dpHTTPClient dphttp.Clienter
 
 	if strings.HasPrefix(nomadEndpoint, httpsPrefix) {
 		tlsConfig, err := createTLSConfig(nomadCACert, nomadTLSSkipVerify)
@@ -53,10 +53,13 @@ func NewClient(nomadEndpoint, nomadCACert string, nomadTLSSkipVerify bool) (*Cli
 			return nil, err
 		}
 
-		dpHTTPClient.HTTPClient.Transport = &http.Transport{TLSClientConfig: tlsConfig}
+		dpHTTPClient = dphttp.NewClientWithTransport(&http.Transport{TLSClientConfig: tlsConfig})
+	} else {
+		dpHTTPClient = dphttp.NewClient()
 	}
+
 	return &Client{
-		Client: &dpHTTPClient,
+		Client: dpHTTPClient,
 		URL:    nomadEndpoint,
 	}, nil
 }
